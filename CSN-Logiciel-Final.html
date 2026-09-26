@@ -71,6 +71,21 @@ input{width:100%;box-sizing:border-box;padding:12px;margin:6px 0}
  const textes=["txt","csv","log","md","json","xml","html","htm","css"];if(type.indexOf("text/")===0||textes.includes(ext)){const r=new FileReader();r.onload=function(){const contenu=String(r.result||""),bas=contenu.toLowerCase(),ind=["<script","javascript:","powershell","wscript.shell","cmd.exe","mshta","document.write(","eval("].filter(x=>bas.includes(x));d.inspection="INSPECTION RÉUSSIE — contenu texte analysé | "+nom;finir(!contenu.trim()?"À VÉRIFIER — fichier texte vide":ind.length?"À VÉRIFIER — "+ind.length+" indice(s) actif(s) ou inhabituel(s) détecté(s)":"OBSERVATION NORMALE — aucun indice inhabituel détecté dans la portion texte inspectée","Inspection automatique du texte terminée")};r.readAsText(f.slice(0,1024*1024));return}
  finir("À VÉRIFIER — format reconnu mais contenu interne non inspecté par cette version","Inspection de base terminée")
  }
+ window.analyserObservation=function(){
+ const d=lire();
+ const obs=d.observation||"";
+ if(obs.indexOf("À VÉRIFIER")===0){
+  d.analyse="Niveau d'attention : ÉLEVÉ – anomalie confirmée, décision requise";
+ }else if(obs.indexOf("OBSERVATION NORMALE")===0){
+  d.analyse="Niveau d'attention : NORMAL – aucune protection requise";
+ }else{
+  d.analyse="Analyse impossible – aucune observation exploitable";
+ }
+ d.activite="Analyse terminée";
+ log(d,"Analyse");
+ sauver(d);
+ afficher(d);
+};
  document.addEventListener("DOMContentLoaded",()=>afficher(lire()));
 })();
 </script></body></html>
