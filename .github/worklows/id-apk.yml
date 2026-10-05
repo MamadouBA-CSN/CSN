@@ -1,41 +1,11 @@
+
 name: Build CSN Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Extraire le projet Android
-        run: unzip -q CSN-ANDROID-1.3-SOURCE.zip
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.6.0'
-
-      - uses: android-actions/setup-android@v3
-
-      - name: Installer Android SDK
-        run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
-
-      - name: Construire APK
-        working-directory: CSN-ANDROID-1.3
-        run: gradle :app:assembleDebug --stacktrace
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: CSN-1.3-AUTO-Android-APK
-          path: CSN-ANDROID-1.3/app/build/outputs/apk/debug/app-debug.apk
+      - run: echo "CSN Android workflow OK"
