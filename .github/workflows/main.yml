@@ -1,6 +1,7 @@
 
 
-me: Build CSN Android APK
+name: Build CSN Android APK
+
 
 on:
   workflow_dispatch:
