@@ -39,5 +39,3 @@ jobs:
         with:
           name: CSN-1.3-AUTO-Android-APK
           path: CSN-ANDROID-1.3/app/build/outputs/apk/debug/app-debug.apk
-
-Quand c’est collé, dites-moi simplement « collé ».
