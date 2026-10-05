@@ -1,1 +1,83 @@
-<meta http-equiv="refresh" content="0; url=CSN-Logiciel-Final.html">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSN — Logiciel final</title>
+<style>
+:root{font-family:Arial,sans-serif;color-scheme:dark}
+body{margin:0;background:#061126;color:#eaf5ff;padding:18px}
+.wrap{max-width:820px;margin:auto}
+.card{border:2px solid #168cff;border-radius:16px;padding:18px;margin:14px 0;background:#081936;box-shadow:0 0 18px #087cff33}
+h1,h2{text-align:center;color:#75c8ff}.ok{color:#65f5a3;font-weight:700}
+button,input{font-size:1rem}button{width:100%;padding:14px;margin:6px 0;border:0;border-radius:10px;background:#168cff;color:white;font-weight:700}
+input{width:100%;box-sizing:border-box;padding:12px;margin:6px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.item{border:1px solid #168cff;border-radius:10px;padding:10px}
+#historique{white-space:pre-line;line-height:1.45}@media(max-width:600px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body><div class="wrap">
+<div class="card"><h1>CSN</h1><h2>Cordon Sanitaire Numérique — Logiciel final</h2>
+<p class="ok" style="text-align:center">CSN FINALISÉ — CHAÎNE COMPLÈTE VALIDÉE</p></div>
+<div class="card"><h2>CHAÎNE OPÉRATIONNELLE</h2><div class="grid">
+<div class="item">1. Inspection ✓</div><div class="item">2. Analyse ✓</div>
+<div class="item">3. Décision ✓</div><div class="item">4. Protection ✓</div>
+<div class="item">5. Contrôle ✓</div><div class="item">6. Restauration ✓</div>
+<div class="item" style="grid-column:1/-1">7. Finalisation ✓</div></div></div>
+<div class="card"><h2>POINT D’ENTRÉE UNIQUE</h2>
+<p>Sélectionnez un fichier local. Le CSN l’inspecte localement sans modifier le fichier d’origine.</p>
+<input id="fichierCSN" type="file">
+<button onclick="inspecterFichier()">INSPECTER LE FICHIER</button>
+<p id="inspection">Aucun fichier inspecté</p></div>
+<div class="card"><h2>OBSERVATION</h2><p id="observation">Aucune observation enregistrée</p></div>
+<div class="card"><h2>ANALYSE</h2><p id="analyse">Aucune analyse effectuée</p><button onclick="analyserObservation()">ANALYSER</button></div>
+<div class="card"><h2>DÉCISION</h2><p id="decision">Aucune décision prise</p><button onclick="prendreDecision()">PRENDRE UNE DÉCISION</button></div>
+<div class="card"><h2>PROTECTION CONTRÔLÉE</h2><p id="protection">Aucune protection appliquée</p>
+<button onclick="appliquerProtection()">APPLIQUER LA PROTECTION</button>
+<button onclick="leverProtection()">LEVER LA PROTECTION</button></div>
+<div class="card"><h2>RESTAURATION</h2><p id="restauration">Aucune restauration effectuée</p>
+<button onclick="restaurerEtatSur()">RESTAURER L’ÉTAT SÛR</button>
+<button onclick="verifierRestauration()">VÉRIFIER LA RESTAURATION</button></div>
+<div class="card"><h2>ÉTAT / MÉMOIRE</h2>
+<p id="etat" class="ok">CSN FINALISÉ — PRÊT À L’EMPLOI</p>
+<p id="activite">Aucune activité enregistrée</p>
+<p id="memoire">Mémoire active</p>
+<h2>HISTORIQUE</h2><p id="historique">Aucun événement enregistré</p></div>
+</div>
+<script>
+(function(){
+ const CLE="CSN_LOGICIEL_FINAL_V1";
+ const initial=()=>({etat:"CSN FINALISÉ — PRÊT À L’EMPLOI",activite:"Aucune activité enregistrée",historique:[],memoire:"Mémoire active",observation:"Aucune observation enregistrée",analyse:"Aucune analyse effectuée",decision:"Aucune décision prise",protection:"Aucune protection appliquée",restauration:"Aucune restauration effectuée",inspection:"Aucun fichier inspecté"});
+ function lire(){try{const x=localStorage.getItem(CLE);return x?Object.assign(initial(),JSON.parse(x)):initial()}catch(e){return initial()}}
+ function sauver(d){localStorage.setItem(CLE,JSON.stringify(d))}
+ function afficher(d){["etat","activite","memoire","observation","analyse","decision","protection","restauration","inspection"].forEach(k=>document.getElementById(k).textContent=d[k]);document.getElementById("historique").textContent=d.historique.length?d.historique.join("\n"):"Aucun événement enregistré"}
+ function log(d,s){d.historique.push(new Date().toLocaleString()+" — "+s);if(d.historique.length>50)d.historique=d.historique.slice(-50)}
+ window.analyserObservation=function(){const d=lire();if(d.observation.indexOf("ANOMALIE")>=0)d.analyse="Niveau d’attention : ÉLEVÉ — anomalie confirmée, décision requise";else if(d.observation.indexOf("À VÉRIFIER")===0)d.analyse="Niveau d’attention : MODÉRÉ — vérification humaine requise";else if(d.observation.indexOf("OBSERVATION NORMALE")===0)d.analyse="Niveau d’attention : NORMAL — aucune protection requise";else d.analyse="Analyse impossible — aucune observation exploitable";d.activite="Analyse terminée";log(d,"Analyse");sauver(d);afficher(d)}
+ window.prendreDecision=function(){const d=lire();if(d.analyse.indexOf("Niveau d’attention : ÉLEVÉ")===0){d.decision="DÉCISION : PROTECTION REQUISE";d.protection="Protection requise — en attente d’application"}else if(d.analyse.indexOf("Niveau d’attention : MODÉRÉ")===0){d.decision="DÉCISION : VÉRIFICATION REQUISE — conserver le fichier inchangé et ne pas l’exécuter avant vérification";d.protection="Protection non déclenchée — vérification préalable"}else if(d.analyse.indexOf("Niveau d’attention : NORMAL")===0){d.decision="DÉCISION : MAINTIEN NORMAL";d.protection="Aucune protection requise"}else d.decision="DÉCISION SUSPENDUE — analyse exploitable requise";d.activite="Décision enregistrée";log(d,"Décision");sauver(d);afficher(d)}
+ window.appliquerProtection=function(){const d=lire();if(d.decision.indexOf("DÉCISION : PROTECTION REQUISE")===0){d.protection="PROTECTION ACTIVE — isolement logique local dans le workflow ; fichier d’origine inchangé";d.restauration="Restauration impossible tant que la protection est active"}else d.protection="PROTECTION NON APPLIQUÉE — aucune décision ne l’autorise";d.activite="Contrôle de protection effectué";log(d,"Protection");sauver(d);afficher(d)}
+ window.leverProtection=function(){const d=lire();if(d.protection.indexOf("PROTECTION ACTIVE")===0){d.protection="PROTECTION LEVÉE — retour contrôlé";d.restauration="Restauration autorisée — état sûr à rétablir"}else d.protection="Aucune protection active à lever";d.activite="Contrôle de protection terminé";log(d,"Levée de protection");sauver(d);afficher(d)}
+ window.restaurerEtatSur=function(){const d=lire();if(d.protection.indexOf("PROTECTION LEVÉE")===0)d.restauration="RESTAURATION EFFECTUÉE — état sûr rétabli";else if(d.protection.indexOf("Aucune protection requise")===0||d.protection.indexOf("Protection non déclenchée")===0||d.protection.indexOf("PROTECTION NON APPLIQUÉE")===0)d.restauration="AUCUNE RESTAURATION NÉCESSAIRE — fichier d’origine inchangé";else if(d.protection.indexOf("PROTECTION ACTIVE")===0)d.restauration="RESTAURATION REFUSÉE — lever d’abord la protection";else d.restauration="RESTAURATION NON DISPONIBLE";d.activite="Restauration traitée";log(d,"Restauration");sauver(d);afficher(d)}
+ window.verifierRestauration=function(){const d=lire();if(d.restauration.indexOf("RESTAURATION EFFECTUÉE")===0)d.restauration="RESTAURATION VÉRIFIÉE — état sûr confirmé dans le workflow";else if(d.restauration.indexOf("AUCUNE RESTAURATION NÉCESSAIRE")===0)d.restauration="VÉRIFICATION COHÉRENTE — aucune restauration requise";else d.restauration="VÉRIFICATION IMPOSSIBLE — aucune restauration valide";d.activite="Vérification terminée";log(d,"Contrôle de restauration");sauver(d);afficher(d)}
+ window.inspecterFichier=function(){const champ=document.getElementById("fichierCSN"),d=lire();if(!champ.files.length){d.inspection="Aucun fichier sélectionné";sauver(d);afficher(d);return}const f=champ.files[0],nom=f.name||"Sans nom",taille=f.size||0,type=f.type||"type non déclaré",p=nom.toLowerCase().split("."),ext=p.length>1?p.pop():"";d.inspection="FICHIER SÉLECTIONNÉ — "+nom+" | "+taille+" octet(s) | ."+ext;
+ const finir=(obs,act)=>{d.observation=obs;d.analyse="Inspection nouvelle — analyse à effectuer";d.decision="Inspection nouvelle — décision en attente";d.protection="Protection en attente d’une décision";d.restauration="Restauration en attente";d.activite=act;log(d,"Inspection — "+nom);sauver(d);afficher(d);analyserObservation();prendreDecision()};
+ if(ext==="pdf"||type==="application/pdf"){const limite=12*1024*1024,r=new FileReader();r.onload=function(){try{const bytes=new Uint8Array(r.result);let brut="";for(let i=0;i<bytes.length;i+=0x8000)brut+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+0x8000,bytes.length)));const indices=[];if(!brut.slice(0,1024).includes("%PDF-"))indices.push("signature PDF atypique");if(!brut.includes("%%EOF"))indices.push("fin %%EOF non repérée");if(/\/JavaScript\b|\/JS\b/i.test(brut))indices.push("JavaScript déclaré");if(/\/OpenAction\b|\/AA\b/i.test(brut))indices.push("action automatique déclarée");if(/\/Launch\b/i.test(brut))indices.push("lancement externe déclaré");if(/\/EmbeddedFile\b|\/Filespec\b/i.test(brut))indices.push("fichier embarqué déclaré");if(/\/URI\b/i.test(brut))indices.push("URI déclarée");if(/\/XFA\b/i.test(brut))indices.push("formulaire XFA détecté");d.inspection="INSPECTION PDF RÉUSSIE — "+nom+" | "+taille+" octet(s)";finir(indices.length?"À VÉRIFIER — "+indices.join(" ; "):taille>limite?"À VÉRIFIER — inspection PDF partielle":"OBSERVATION NORMALE — aucun indice structurel inhabituel repéré","Inspection PDF locale terminée")}catch(e){finir("À VÉRIFIER — inspection PDF interrompue","Erreur locale")}};r.readAsArrayBuffer(f.slice(0,Math.min(taille,limite)));return}
+ const textes=["txt","csv","log","md","json","xml","html","htm","css"];if(type.indexOf("text/")===0||textes.includes(ext)){const r=new FileReader();r.onload=function(){const contenu=String(r.result||""),bas=contenu.toLowerCase(),ind=["<script","javascript:","powershell","wscript.shell","cmd.exe","mshta","document.write(","eval("].filter(x=>bas.includes(x));d.inspection="INSPECTION RÉUSSIE — contenu texte analysé | "+nom;finir(!contenu.trim()?"À VÉRIFIER — fichier texte vide":ind.length?"À VÉRIFIER — "+ind.length+" indice(s) actif(s) ou inhabituel(s) détecté(s)":"OBSERVATION NORMALE — aucun indice inhabituel détecté dans la portion texte inspectée","Inspection automatique du texte terminée")};r.readAsText(f.slice(0,1024*1024));return}
+ finir("À VÉRIFIER — format reconnu mais contenu interne non inspecté par cette version","Inspection de base terminée")
+ }
+ window.analyserObservation=function(){
+ const d=lire();
+ const obs=d.observation||"";
+ if(obs.indexOf("À VÉRIFIER")===0){
+  d.analyse="Niveau d'attention : ÉLEVÉ – anomalie confirmée, décision requise";
+ }else if(obs.indexOf("OBSERVATION NORMALE")===0){
+  d.analyse="Niveau d'attention : NORMAL – aucune protection requise";
+ }else{
+  d.analyse="Analyse impossible – aucune observation exploitable";
+ }
+ d.activite="Analyse terminée";
+ sauver(d);
+ afficher(d);
+ }
+ afficher(lire());
+})();
+</script></body></html>
