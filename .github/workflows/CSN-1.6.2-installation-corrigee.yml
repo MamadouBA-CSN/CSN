@@ -53,5 +53,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: CSN-1.6.2-installation-corrigee
-          path: CSN-1.6.2.apk
+          path: CSN-1.6.2-installation-corrigee.apk
           if-no-files-found: error
