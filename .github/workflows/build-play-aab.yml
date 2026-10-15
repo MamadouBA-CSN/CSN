@@ -7,12 +7,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v            - name: Extraire les sources Android
+        run: unzip -o CSN-1.6.2-Play-AAB-API36-corrige.zip 'app/*' build.gradle settings.gradle
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      -  uses: android-actions/setup-android@v4
+          
+          
+      
       - name: Installer le SDK Android 36
         run: sdkmanager --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
       - uses: gradle/actions/setup-gradle@v4
