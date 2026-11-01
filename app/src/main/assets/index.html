@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'unsafe-inline'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CSN 1.6.3 — Vers un usage universel — Cordon Sanitaire Numérique</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color-scheme:dark;--bg:#061126;--card:#0a1934;--line:#168cff;--ok:#6df0a7;--warn:#ffd166;--bad:#ff7b7b;--muted:#a9bed6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#eef7ff;padding:16px}.wrap{max-width:920px;margin:auto}.card{background:var(--card);border:1px solid #215b96;border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 8px 28px #0004}h1,h2{margin:.25em 0 .6em;text-align:center}h1{color:#7cc8ff}h2{color:#9ed7ff;font-size:1.15rem}.sub{text-align:center;color:var(--muted);margin-top:0}.status{font-weight:700;text-align:center;padding:10px;border-radius:10px}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.muted{color:var(--muted)}button,input{font:inherit}input[type=file]{width:100%;padding:12px;border-radius:10px;border:1px solid #356da5;background:#07152c;color:#fff}button{width:100%;padding:13px 14px;margin:6px 0;border:0;border-radius:10px;background:var(--line);color:#fff;font-weight:700;cursor:pointer}button.secondary{background:#24425f}button.danger{background:#8d2d37}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.item{border:1px solid #285d93;border-radius:10px;padding:10px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-word;background:#07152c;padding:12px;border-radius:10px}.small{font-size:.9rem;color:var(--muted)}.pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid #376da1;margin:2px 4px 2px 0}.row{display:flex;gap:8px;flex-wrap:wrap}.row button{width:auto;flex:1 1 180px}.hide{display:none}@media(max-width:650px){.grid{grid-template-columns:1fr}.row button{width:100%;flex-basis:100%}}
+textarea,input[type=text]{width:100%;padding:12px;background:#07152c;color:#fff;border:1px solid #356da5;border-radius:10px;font:inherit}textarea{min-height:130px}button:disabled{opacity:.5;cursor:wait}.tabbar{display:flex;gap:8px;flex-wrap:wrap}.tabbar button{flex:1;min-width:100px}.tabbar button[aria-selected=true]{background:#146aca;outline:2px solid #8edbff}label{display:block;margin:10px 0}a{color:#9ed7ff}
+body{line-height:1.55}button{min-height:48px}button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #ffd166;outline-offset:3px}.mono{overflow-wrap:anywhere}summary{cursor:pointer;padding:12px;font-weight:bold}#resumeSimple{font-size:1.15rem;border-left:5px solid #7cc8ff;padding:16px;background:#102948;border-radius:10px}#hash{overflow-wrap:anywhere}h2{margin-top:1em}
+</style>
+</head>
+<body><div class="wrap">
+<div class="card">
+  <h1>CSN 1.6.3 — Vers un usage universel</h1>
+  <h2>Cordon Sanitaire Numérique — fichiers, messages, liens, appels et IA</h2>
+  <p class="sub">Analyse locale : choisissez un des cinq modes. Pour un appel ou une IA, fournissez le texte à examiner. Aucun contenu analysé n’est envoyé sur Internet. CSN repère des indices ; il ne garantit pas l’absence de menace.</p>
+  <p id="etat" class="status ok">DÉMARRAGE EN COURS — Si ce message reste affiché, le moteur est bloqué</p>
+</div>
+
+<div class="card">
+<h2>1. Que souhaitez-vous examiner ?</h2>
+<div class="tabbar" role="tablist" aria-label="Analyse"><button id="tabFichier" role="tab" aria-selected="true" aria-controls="panelFichier">Fichier</button><button id="tabMessage" role="tab" aria-selected="false" aria-controls="panelMessage">Message</button><button id="tabAppel" role="tab" aria-selected="false" aria-controls="panelAppel">Appel</button><button id="tabIA" role="tab" aria-selected="false" aria-controls="panelIA">IA</button><button id="tabLien" role="tab" aria-selected="false" aria-controls="panelLien">Lien</button></div>
+<p class="small">Pour les messages et liens : copiez le contenu reçu puis collez-le ici. CSN ne consulte pas vos comptes et n’ouvre aucun lien.</p>
+<div id="panelMessage" role="tabpanel" hidden><label for="messageCSN">Message reçu (courriel, SMS ou WhatsApp)</label><textarea id="messageCSN" maxlength="50000" placeholder="Collez le message ici…"></textarea><button class="secondary" id="effacerMessage">Effacer le texte</button><button id="btnMessage">EXAMINER LE MESSAGE</button>
+<button id="btnReparer">RÉPARATION</button>
+<p class="small">Crée une copie du texte : correction des accents mal encodés et retrait des liens HTTP(S) signalés par CSN. Les demandes trompeuses peuvent rester présentes. Cette copie n’est pas une preuve de sécurité.</p>
+<div id="reparationZone" hidden><h3>Copie réparée — à relire</h3><textarea id="texteRepare" readonly aria-label="Copie réparée"></textarea><pre id="bilanReparation" style="white-space:pre-wrap"></pre><button id="btnCopieReparee">TÉLÉCHARGER LA COPIE RÉPARÉE</button><button id="btnBilanReparation">TÉLÉCHARGER LE RAPPORT DE RÉPARATION</button><p class="small">Le texte original reste dans le champ du message. Les fichiers téléchargés contiennent votre texte : conservez-les avec précaution.</p></div></div>
+<div id="panelAppel" role="tabpanel" hidden><label for="appelCSN">Ce que la personne vous a demandé pendant l’appel</label><textarea id="appelCSN" maxlength="50000" placeholder="Écrivez les propos ou collez une transcription…"></textarea><button class="secondary" id="effacerAppel">Effacer le texte</button><button id="btnAppel">EXAMINER LE TEXTE DE L’APPEL</button><p class="small">CSN n’écoute et n’enregistre aucun appel. Il ne vérifie ni la voix ni l’identité de l’appelant.</p></div>
+<div id="panelIA" role="tabpanel" hidden><label for="iaCSN">Texte reçu d’une IA ou destiné à une IA</label><textarea id="iaCSN" maxlength="50000" placeholder="Collez l’échange ou la réponse à examiner…"></textarea><button class="secondary" id="effacerIA">Effacer le texte</button><button id="btnIA">EXAMINER L’ÉCHANGE AVEC L’IA</button><p class="small">CSN recherche des indices dans le texte. Il ne vérifie pas les faits, les sources ou les réponses de l’IA.</p></div>
+<div id="panelLien" role="tabpanel" hidden><label for="lienCSN">Adresse du lien</label><input id="lienCSN" type="text" maxlength="4096" placeholder="https://…" autocomplete="off" spellcheck="false"><button class="secondary" id="effacerLien">Effacer le lien</button><button id="btnLien">EXAMINER LE LIEN SANS L’OUVRIR</button></div>
+<div id="panelFichier" role="tabpanel">
+  <h2>Choisir un fichier — inspection automatique</h2>
+  <input id="fichierCSN" type="file">
+  <button id="btnInspecter" class="secondary">RÉINSPECTER LE FICHIER</button>
+</div>
+  <p id="inspection" class="mono" aria-live="polite">Aucun contenu inspecté.</p>
+</div>
+
+<div class="card">
+  <h2>2. Résultat</h2>
+  <p id="resumeSimple" role="status" aria-live="polite">Choisissez un contenu, puis lancez son examen.</p>
+  <h2>Que faire maintenant ?</h2><p id="decision" class="mono">Aucune décision.</p>
+  <h2>Protection conseillée</h2><p id="protection" class="mono">Aucune mesure.</p>
+  <details id="detailsAnalyse"><summary>Voir les détails et les limites de l’analyse</summary>
+  <div class="grid">
+    <div class="item"><b>Type détecté</b><div id="typeDetecte" class="muted">—</div></div>
+    <div class="item"><b>Niveau d’attention</b><div id="niveau" class="muted">—</div></div>
+    <div class="item"><b>Taille</b><div id="taille" class="muted">—</div></div>
+    <div class="item"><b>Identifiant du fichier (SHA‑256)</b><div id="hash" class="muted">—</div></div>
+  </div>
+  <h2>Observation</h2><p id="observation" class="mono">Aucune observation.</p>
+  <h2>Éléments relevés et limites</h2><p id="indices" class="mono">Aucun indice enregistré.</p>
+  </details>
+  <div class="row">
+    <button id="btnRapport" class="secondary" disabled>TÉLÉCHARGER LE RAPPORT</button>
+    <button id="btnReparationResultat">RÉPARATION</button>
+    <button id="btnReset" class="secondary">NOUVELLE INSPECTION</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Portée et limites</h2>
+  <div class="small">
+    <span class="pill">PDF</span><span class="pill">TXT / CSV / JSON / XML</span><span class="pill">HTML / SVG / CSS</span>
+    <span class="pill">DOCX / XLSX / PPTX</span><span class="pill">DOCM / XLSM / PPTM</span><span class="pill">ZIP / APK / JAR</span>
+    <span class="pill">Office ancien / OLE</span><span class="pill">Images</span><span class="pill">Audio / Vidéo</span>
+    <span class="pill">EXE / DLL / ELF / Mach‑O / WASM / scripts</span><span class="pill">RAR / 7Z</span>
+  </div>
+  <p class="small"><b>Limite importante :</b> CSN 1.6.3 — Vers un usage universel automatise l’inspection dès la sélection d’un fichier. Il reste un outil d’analyse de structure et d’indices. Il ne remplace pas un antivirus, un bac à sable ou la protection du système. Il ne supprime pas et ne met pas réellement les fichiers en quarantaine.</p>
+</div>
+
+<div class="card">
+  <h2>Historique local</h2><p class="small">Historique propre à ce navigateur, si le stockage est disponible. Les noms de fichiers y figurent ; effacez-le sur un appareil partagé. Il peut disparaître après un nettoyage. Conservez les rapports téléchargés.</p>
+  <div class="row"><button class="secondary" id="btnEffacer">EFFACER L’HISTORIQUE</button></div>
+  <p id="historique" class="mono">Aucun événement enregistré.</p>
+</div>
+</div>
+<script src="csn.js"></script>
+
+<div class="card" style="text-align:center"><p class="small">CSN 1.6.3 — Vers un usage universel — Révision du 1 novembre 2026 — essais sur appareils à poursuivre<br>© 2026 Mamadou BA — Tous droits réservés.</p></div>
+<div class="card"><h2>Utilisation sur différents appareils</h2><p class="small">Fichier autonome à ouvrir dans un navigateur récent. Vérifié ici par tests logiciels ; les essais réels sur Windows, iPhone, iPad et Mac restent à effectuer. Pour commencer : Fichier → choisir un document, Message → coller un texte, ou Lien → coller une adresse complète. Le logiciel ne surveille pas automatiquement les autres applications.</p></div><div class="card"><h2>Évolution vers un usage universel</h2><p class="small">Cette version ajoute les modes Appel (texte fourni) et IA (échange collé). Elle reste en français. Étapes suivantes : vérifier les fonctions sur Android, Windows, iPhone/iPad et Mac ; adapter l’interface et les règles aux langues retenues ; élargir les formats avec des limites explicites. La protection automatique des autres applications nécessite un projet distinct. Aucune compatibilité universelle n’est encore certifiée.</p></div></body></html>
