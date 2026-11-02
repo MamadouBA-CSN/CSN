@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4        
       - name: Extraire les source s Android
-        run: unzip -o CSN-1.6.2-Play-AAB-API36-corrige.zip 'app/*' build.gradle settings.gradle
+        run: : unzip -o CSN-1.6.2-Play-AAB-API36-corrige.zip 'app/*' build.gradle settings.gradle -x 'app/src/main/assets/*' && sed -i "s/versionCode .*/versionCode 19/; s/versionName .*/versionName '1.6.3'/" app/build.gradle
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -47,6 +47,6 @@ jobs:
       - name: Publier l’artefact de compilation
         uses: actions/upload-artifact@v4
         with:
-          name: CSN-1.6.2-Play-AAB-candidate
+          name: CSN-1.6.3-Play-AAB-candidate
           path: app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
