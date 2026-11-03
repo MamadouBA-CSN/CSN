@@ -1,27 +1,36 @@
 name: Build CSN Play AAB
+
 on:
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4        
-      - name: Extraire les source s Android
-        run: : unzip -o CSN-1.6.2-Play-AAB-API36-corrige.zip 'app/*' build.gradle settings.gradle -x 'app/src/main/assets/*' && sed -i "s/versionCode .*/versionCode 19/; s/versionName .*/versionName '1.6.3'/" app/build.gradle
+      - uses: actions/checkout@v4
+
+      - name: Extraire les sources Android
+        run: |
+          unzip -o CSN-1.6.2-Play-AAB-API36-corrige.zip 'app/*' build.gradle settings.gradle -x 'app/src/main/assets/*'
+          sed -i "s/versionCode .*/versionCode 19/; s/versionName .*/versionName '1.6.3'/" app/build.gradle
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-          
+
       - uses: android-actions/setup-android@v4
-      
+
       - name: Installer le SDK Android 36
         run: sdkmanager --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
+
       - name: Préparer la signature de publication si configurée
         env:
           CSN_UPLOAD_KEYSTORE_BASE64: ${{ secrets.CSN_UPLOAD_KEYSTORE_BASE64 }}
@@ -38,12 +47,14 @@ jobs:
             echo "CSN_RELEASE_SIGNING=not-configured" >> "$GITHUB_ENV"
             echo "::warning::L’AAB sera non signé et ne pourra pas être envoyé à Google Play."
           fi
+
       - name: Construire l’Android App Bundle
         env:
           CSN_UPLOAD_STORE_PASSWORD: ${{ secrets.CSN_UPLOAD_STORE_PASSWORD }}
           CSN_UPLOAD_KEY_ALIAS: ${{ secrets.CSN_UPLOAD_KEY_ALIAS }}
           CSN_UPLOAD_KEY_PASSWORD: ${{ secrets.CSN_UPLOAD_KEY_PASSWORD }}
         run: gradle bundleRelease
+
       - name: Publier l’artefact de compilation
         uses: actions/upload-artifact@v4
         with:
