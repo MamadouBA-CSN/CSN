@@ -9,6 +9,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -31,7 +32,7 @@ jobs:
         with:
           gradle-version: '8.13'
 
-      - name: Préparer la signature de publication si configurée
+      - name: Preparer la signature de publication si configuree
         env:
           CSN_UPLOAD_KEYSTORE_BASE64: ${{ secrets.CSN_UPLOAD_KEYSTORE_BASE64 }}
           CSN_UPLOAD_STORE_PASSWORD: ${{ secrets.CSN_UPLOAD_STORE_PASSWORD }}
@@ -45,19 +46,19 @@ jobs:
             echo "CSN_RELEASE_SIGNING=ready" >> "$GITHUB_ENV"
           else
             echo "CSN_RELEASE_SIGNING=not-configured" >> "$GITHUB_ENV"
-            echo "::warning::L’AAB sera non signé et ne pourra pas être envoyé à Google Play."
+            echo "::warning::AAB non signe : envoi a Google Play impossible."
           fi
 
-      - name: Construire l’Android App Bundle
+      - name: Construire Android App Bundle
         env:
           CSN_UPLOAD_STORE_PASSWORD: ${{ secrets.CSN_UPLOAD_STORE_PASSWORD }}
           CSN_UPLOAD_KEY_ALIAS: ${{ secrets.CSN_UPLOAD_KEY_ALIAS }}
           CSN_UPLOAD_KEY_PASSWORD: ${{ secrets.CSN_UPLOAD_KEY_PASSWORD }}
         run: gradle bundleRelease
 
-      - name: Publier l’artefact de compilation
+      - name: Publier artefact de compilation
         uses: actions/upload-artifact@v4
         with:
-          name: CSN-1.6.3-Play-AAB-candidate
+          name: CSN-1.6.3-Play-AAB-candidat
           path: app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
