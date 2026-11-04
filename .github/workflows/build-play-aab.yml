@@ -1,4 +1,4 @@
-name: Build CSN Play AAB
+name: Build CSN APK 1.6.3
 
 on:
   workflow_dispatch:
@@ -60,12 +60,12 @@ jobs:
         with:
           gradle-version: '8.13'
 
-      - name: Construire le fichier AAB
-        run: gradle --no-daemon :app:bundleRelease
+      - name: Construire le fichier APK
+        run: gradle --no-daemon :app:assembleDebug
 
-      - name: Conserver le fichier AAB
+      - name: Conserver le fichier APK
         uses: actions/upload-artifact@v4
         with:
-          name: CSN-1.6.3-AAB-travail
-          path: app/build/outputs/bundle/release/*.aab
+          name: CSN-1.6.3-APK-test
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
