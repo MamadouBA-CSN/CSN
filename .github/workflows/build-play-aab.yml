@@ -1,5 +1,70 @@
 
-name: Build CSN Play AAB
+
+
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extraire les sources et préparer la version 1.6.3
+        shell: bash
+        run: |
+          unzip -o CSN-1.6.2-Play-AAB-API36-corrige.zip 'app/*' build.gradle settings.gradle -x 'app/src/main/assets/*'
+          sed -i "s/versionCode .*/versionCode 19/; s/versionName .*/versionName '1.6.3'/" app/build.gradle
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v4
+
+      - name: Installer le SDK Android 36
+        run: sdkmanager --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Préparer la signature de publication
+        env:
+          CSN_UPLOAD_KEYSTORE_BASE64: ${{ secrets.CSN_UPLOAD_KEYSTORE_BASE64 }}
+          CSN_UPLOAD_STORE_PASSWORD: ${{ secrets.CSN_UPLOAD_STORE_PASSWORD }}
+          CSN_UPLOAD_KEY_ALIAS: ${{ secrets.CSN_UPLOAD_KEY_ALIAS }}
+          CSN_UPLOAD_KEY_PASSWORD: ${{ secrets.CSN_UPLOAD_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          if [ -z "$CSN_UPLOAD_KEYSTORE_BASE64" ] || [ -z "$CSN_UPLOAD_STORE_PASSWORD" ] || [ -z "$CSN_UPLOAD_KEY_ALIAS" ] || [ -z "$CSN_UPLOAD_KEY_PASSWORD" ]; then
+            echo "::error::Un ou plusieurs secrets de signature sont manquants."
+            exit 1
+          fi
+
+          printf '%s' "$CSN_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/app/csn-upload-key.jks"
+          echo "CSN_UPLOAD_KEYSTORE_PATH=$GITHUB_WORKSPACE/app/csn-upload-key.jks" >> "$GITHUB_ENV"
+          echo "CSN_RELEASE_SIGNING=ready" >> "$GITHUB_ENV"
+
+      - name: Construire Android App Bundle 1.6.3
+        env:
+          CSN_UPLOAD_STORE_PASSWORD: ${{ secrets.CSN_UPLOAD_STORE_PASSWORD }}
+          CSN_UPLOAD_KEY_ALIAS: ${{ secrets.CSN_UPLOAD_KEY_ALIAS }}
+          CSN_UPLOAD_KEY_PASSWORD: ${{ secrets.CSN_UPLOAD_KEY_PASSWORD }}
+        run: gradle bundleRelease
+
+      - name: Publier l’artefact de compilation 1.6.3
+        uses: actions/upload-artifact@v4
+        with:
+          name: CSN-1.6.3-Play-AAB
+          path: app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error Play AAB
 
 
 on:
