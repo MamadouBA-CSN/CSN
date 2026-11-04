@@ -28,18 +28,31 @@ jobs:
 
           chemin = Path("app/build.gradle")
           contenu = chemin.read_text()
+
           contenu, codes = re.subn(
               r"(?m)^(\s*)versionCode\s+.*$",
               r"\g<1>versionCode 19",
               contenu
           )
+
           contenu, noms = re.subn(
               r"(?m)^(\s*)versionName\s+.*$",
               r'\g<1>versionName "1.6.3"',
               contenu
           )
-          if codes != 1 or noms != 1:
-              raise SystemExit("Version introuvable ou presente plusieurs fois.")
+
+          contenu, identifiants = re.subn(
+              r'(?m)^(\s*)applicationId\s+["\']com\.mamadouba\.csn162["\']\s*$',
+              r'\1applicationId "com.mamadouba.csn163"',
+              contenu
+          )
+
+          if codes != 1 or noms != 1 or identifiants != 1:
+              raise SystemExit(
+                  f"Modification impossible : versionCode={codes}, "
+                  f"versionName={noms}, applicationId={identifiants}."
+              )
+
           chemin.write_text(contenu)
           PY
 
