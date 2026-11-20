@@ -13,8 +13,8 @@ jobs:
         KEY_ALIAS: ${{ secrets.CSN_UPLOAD_KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.CSN_UPLOAD_KEY_PASSWORD }}
       shell: bash
-      run: "for variable in KEYSTORE STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do\n  test -n \"${!variable}\" || {\
-        \ echo \"Secret de signature manquant : $variable\"; exit 1; }\ndone\n"
+      run: "for variable in KEYSTORE STORE_PASSWORD; do\n  test -n \"${!variable}\" || { echo \"Secret de signature\
+        \ manquant : $variable\"; exit 1; }\ndone\n"
     - name: Restaurer le paquet - partie 1
       shell: bash
       run: 'cat > "$RUNNER_TEMP/csn-package.b64" <<''CSN_DATA''
@@ -1421,35 +1421,32 @@ jobs:
         CSN_UPLOAD_KEYSTORE_BASE64: ${{ secrets.CSN_UPLOAD_KEYSTORE_BASE64 }}
         CSN_UPLOAD_STORE_PASSWORD: ${{ secrets.CSN_UPLOAD_STORE_PASSWORD }}
         CSN_UPLOAD_KEY_ALIAS: ${{ secrets.CSN_UPLOAD_KEY_ALIAS }}
-        CSN_UPLOAD_KEY_PASSWORD: ${{ secrets.CSN_UPLOAD_KEY_PASSWORD }}
+        CSN_UPLOAD_KEY_PASSWORD: ${{ secrets.CSN_UPLOAD_KEY_PASSWORD || secrets.CSN_UPLOAD_STORE_PASSWORD }}
       shell: bash
-      run: 'test -n "$CSN_UPLOAD_KEYSTORE_BASE64" || { echo ''Clé de téléversement absente : publication impossible.'';
-        exit 1; }
-
-        test -n "$CSN_UPLOAD_STORE_PASSWORD"
-
-        test -n "$CSN_UPLOAD_KEY_ALIAS"
-
-        test -n "$CSN_UPLOAD_KEY_PASSWORD"
-
-        trap ''rm -f "$RUNNER_TEMP/csn-upload.jks"'' EXIT
-
-        printf ''%s'' "$CSN_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/csn-upload.jks"
-
-        cp build/CSN-1.6.3-MISE-A-JOUR-NON-SIGNE.aab build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab
-
-        jarsigner -keystore "$RUNNER_TEMP/csn-upload.jks" -storepass:env CSN_UPLOAD_STORE_PASSWORD -keypass:env
-        CSN_UPLOAD_KEY_PASSWORD build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab "$CSN_UPLOAD_KEY_ALIAS"
-
-        LC_ALL=C jarsigner -verify -verbose -certs build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab > "$RUNNER_TEMP/csn-signature-check.txt"
-
-        grep -F "jar verified." "$RUNNER_TEMP/csn-signature-check.txt"
-
-        keytool -printcert -jarfile build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab
-
-        java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle=build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab
-
-        '
+      run: "set -euo pipefail\numask 077\nsign_dir=\"$(mktemp -d \"$RUNNER_TEMP/csn-signing.XXXXXX\")\"\ntrap 'rm\
+        \ -rf \"$sign_dir\"' EXIT\nprintf '%s' \"$CSN_UPLOAD_KEYSTORE_BASE64\" | tr -d '[:space:]' | base64 --decode\
+        \ > \"$sign_dir/upload.keystore\"\ncat > \"$sign_dir/InspectKey.java\" <<'JAVA'\nimport java.nio.file.*;\n\
+        import java.security.*;\nimport java.util.*;\npublic class InspectKey {\n  public static void main(String[]\
+        \ args) throws Exception {\n    try {\n      char[] storePassword=System.getenv(\"CSN_UPLOAD_STORE_PASSWORD\"\
+        ).toCharArray();\n      char[] keyPassword=System.getenv(\"CSN_UPLOAD_KEY_PASSWORD\").toCharArray();\n \
+        \     KeyStore ks=KeyStore.getInstance(new java.io.File(args[0]), storePassword);\n      String alias=System.getenv(\"\
+        CSN_UPLOAD_KEY_ALIAS\");\n      if(alias==null || alias.isBlank()) {\n        List<String> keys=new ArrayList<>();\n\
+        \        for (Enumeration<String> e=ks.aliases(); e.hasMoreElements();) {\n          String a=e.nextElement();\n\
+        \          if(ks.entryInstanceOf(a,KeyStore.PrivateKeyEntry.class)) keys.add(a);\n        }\n        if(keys.size()!=1)\
+        \ throw new Exception();\n        alias=keys.get(0);\n      }\n      if (!(ks.getKey(alias,keyPassword)\
+        \ instanceof PrivateKey)) throw new Exception();\n      if(alias.contains(\"\\n\") || alias.contains(\"\\\
+        r\")) throw new Exception();\n      Files.writeString(Path.of(args[1]),alias);\n      Arrays.fill(storePassword,'\\\
+        0'); Arrays.fill(keyPassword,'\\0');\n      System.out.println(\"Cle privee et mot de passe verifies.\"\
+        );\n    } catch(Exception e) {\n      System.err.println(\"Signature bloquee : verifier le mot de passe\
+        \ du keystore, celui de la cle ou la presence de plusieurs cles privees.\");\n      System.exit(1);\n  \
+        \  }\n  }\n}\nJAVA\njava \"$sign_dir/InspectKey.java\" \"$sign_dir/upload.keystore\" \"$sign_dir/alias\"\
+        \nCSN_UPLOAD_KEY_ALIAS=\"$(cat \"$sign_dir/alias\")\"\nmask_alias=\"${CSN_UPLOAD_KEY_ALIAS//'%'/'%25'}\"\
+        \nprintf '::add-mask::%s\\n' \"$mask_alias\"\ncp build/CSN-1.6.3-MISE-A-JOUR-NON-SIGNE.aab build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab\n\
+        jarsigner -keystore \"$sign_dir/upload.keystore\" -storepass:env CSN_UPLOAD_STORE_PASSWORD -keypass:env\
+        \ CSN_UPLOAD_KEY_PASSWORD build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab \"$CSN_UPLOAD_KEY_ALIAS\"\nLC_ALL=C jarsigner\
+        \ -verify -verbose -certs build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab > \"$sign_dir/verification.txt\"\ngrep -F\
+        \ 'jar verified.' \"$sign_dir/verification.txt\"\nkeytool -printcert -jarfile build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab\n\
+        java -jar \"$RUNNER_TEMP/bundletool.jar\" validate --bundle=build/CSN-1.6.3-MISE-A-JOUR-SIGNE.aab\n"
       working-directory: csn-release
     - uses: actions/upload-artifact@v4
       with:
